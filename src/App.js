@@ -1,26 +1,48 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {Observable} from 'rxjs';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+	constructor() {
+		super();
+		this.state = {
+			clicks: 0,
+			disable: false
+		}
+
+		this.bashable = this.bashable.bind(this);
+	}
+
+	componentDidMount() {
+		const button = document.querySelector('#submitOnce');
+        const clicks$ = Observable.fromEvent(button, 'click');
+        const result = clicks$.debounce(() => Observable.interval(1000));
+        result.subscribe(x => this.nonBashable(x));
+	}
+
+	bashable() {
+		let count = this.state.clicks;
+		count++;
+		this.setState({bashableText: `I'm bashable. Clicks: ${count}`, clicks: count})
+	}
+
+	nonBashable(x) {
+		if(x) {
+			let count = 0;
+			count++;
+            this.setState({nonBashableText: `I'm not bashable I'm afraid. Clicks: ${count}`, disable: true});
+        }
+	}
+
+	render() {
+		return (
+			<>
+				<button onClick={this.bashable}>bashable</button>
+				<div>{this.state.bashableText}</div>
+				<button id="submitOnce" disabled={this.state.disable}>not bashable</button>
+				<div>{this.state.nonBashableText}</div>
+			</>
+		);
+	}
 }
 
 export default App;
